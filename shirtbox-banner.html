@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)file:///Users/jonwells/Downloads/shirtbox-banner_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shirtbox Announcement Banner</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 40px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .banner {
+      width: 100%;
+      height: 40px;
+      background: #000;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .banner-nav {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0 12px;
+      z-index: 10;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      opacity: 0.55;
+      transition: opacity 0.2s;
+    }
+    .banner-nav:hover { opacity: 1; }
+    .banner-nav.prev { left: 0; }
+    .banner-nav.next { right: 0; }
+    .banner-nav svg { width: 9px; height: 9px; display: block; }
+
+    .slides-wrapper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      opacity: 0;
+      transform: translateY(110%);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .slide.exit-up {
+      opacity: 0;
+      transform: translateY(-110%);
+    }
+
+    .slide-icon svg {
+      width: 13px;
+      height: 13px;
+      fill: #fff;
+      display: block;
+    }
+
+    .slide-text {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .slide-text .sep {
+      margin: 0 6px;
+      font-weight: 400;
+      opacity: 0.5;
+    }
+
+    .slide-text a {
+      color: #fff;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 2px;
+      width: 100%;
+      background: rgba(255,255,255,0.15);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: rgba(255,255,255,0.7);
+      width: 0%;
+    }
+
+    .progress-fill.animate {
+      transition: width linear;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner" id="banner">
+
+    <button class="banner-nav prev" onclick="changeSlide(-1)" aria-label="Previous">
+      <svg viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 1.5L2.5 4.5L6 7.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+
+    <div class="slides-wrapper">
+
+      <div class="slide active">
+        <span class="slide-text">🚚&nbsp; <strong>Free UK Shipping</strong><span class="sep">–</span>On Orders Over £35</span>
+      </div>
+
+      <div class="slide">
+        <span class="slide-text">🎁&nbsp; <strong>Father's Day – 21 June</strong><span class="sep">–</span>Shop the Gift Guide</span>
+      </div>
+
+      <div class="slide">
+        <span class="slide-text">⭐&nbsp; <strong>Printed in the UK</strong><span class="sep">–</span>Proper Quality, No Faff</span>
+      </div>
+
+    </div>
+
+    <button class="banner-nav next" onclick="changeSlide(1)" aria-label="Next">
+      <svg viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 1.5L6.5 4.5L3 7.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+
+    <div class="progress-bar">
+      <div class="progress-fill animate" id="progressFill" style="width: 100%; transition-duration: 4000ms;"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const DURATION = 4000;
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const fill = document.getElementById('progressFill');
+    let current = 0;
+    let autoTimer = null;
+    let startTime = null;
+    let elapsed = 0;
+    let paused = false;
+
+    function goTo(next) {
+      slides[current].classList.remove('active');
+      slides[current].classList.add('exit-up');
+      const prev = current;
+      setTimeout(() => slides[prev].classList.remove('exit-up'), 420);
+      current = (next + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      startProgress();
+    }
+
+    function changeSlide(dir) {
+      clearTimeout(autoTimer);
+      goTo(current + dir);
+      scheduleNext();
+    }
+
+    function scheduleNext() {
+      clearTimeout(autoTimer);
+      autoTimer = setTimeout(() => { goTo(current + 1); scheduleNext(); }, DURATION);
+    }
+
+    function startProgress() {
+      elapsed = 0;
+      fill.classList.remove('animate');
+      fill.style.width = '0%';
+      void fill.offsetWidth;
+      fill.style.transitionDuration = DURATION + 'ms';
+      fill.classList.add('animate');
+      fill.style.width = '100%';
+      startTime = Date.now();
+    }
+
+    function pauseProgress() {
+      elapsed += Date.now() - startTime;
+      fill.classList.remove('animate');
+      const pct = Math.min((elapsed / DURATION) * 100, 100);
+      fill.style.transitionDuration = '0ms';
+      fill.style.width = pct + '%';
+    }
+
+    function resumeProgress() {
+      const remaining = DURATION - elapsed;
+      startTime = Date.now();
+      void fill.offsetWidth;
+      fill.style.transitionDuration = remaining + 'ms';
+      fill.classList.add('animate');
+      fill.style.width = '100%';
+      clearTimeout(autoTimer);
+      autoTimer = setTimeout(() => { goTo(current + 1); scheduleNext(); }, remaining);
+    }
+
+    const banner = document.getElementById('banner');
+    banner.addEventListener('mouseenter', () => { if (!paused) { paused = true; clearTimeout(autoTimer); pauseProgress(); } });
+    banner.addEventListener('mouseleave', () => { if (paused) { paused = false; resumeProgress(); } });
+
+    // Kick off
+    startProgress();
+    scheduleNext();
+  </script>
+
+
+</body></html>
